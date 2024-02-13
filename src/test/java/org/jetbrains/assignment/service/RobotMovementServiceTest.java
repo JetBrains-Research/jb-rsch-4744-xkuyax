@@ -3,17 +3,18 @@ package org.jetbrains.assignment.service;
 import org.jetbrains.assignment.model.Location;
 import org.jetbrains.assignment.model.RobotDirection;
 import org.jetbrains.assignment.model.RobotMovement;
+import org.jetbrains.assignment.repository.RequestRowRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 
 public class RobotMovementServiceTest {
 
-    private RobotMovementService service = new RobotMovementService();
+    private RobotMovementService service = new RobotMovementService(mock(RequestRowRepository.class));
 
     @Test
     public void shouldReturnPositionsForGivenDirections() {

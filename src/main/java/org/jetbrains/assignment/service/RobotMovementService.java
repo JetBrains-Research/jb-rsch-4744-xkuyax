@@ -1,8 +1,13 @@
 package org.jetbrains.assignment.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.assignment.model.Location;
 import org.jetbrains.assignment.model.RobotDirection;
 import org.jetbrains.assignment.model.RobotMovement;
+import org.jetbrains.assignment.repository.RequestRow;
+import org.jetbrains.assignment.repository.RequestRowRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +15,14 @@ import java.util.List;
 
 @Service
 public class RobotMovementService {
+
+    private final RequestRowRepository requestRowRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    public RobotMovementService(RequestRowRepository requestRowRepository) {
+        this.requestRowRepository = requestRowRepository;
+    }
 
     public List<Location> storeMovements(List<RobotMovement> movements) {
         var positionX = 0;
@@ -20,6 +33,7 @@ public class RobotMovementService {
             positionY += movement.direction().getY() * movement.steps();
             locations.add(new Location(positionX, positionY));
         }
+        writeRequestRow(movements, locations);
         return locations;
     }
 
@@ -44,6 +58,18 @@ public class RobotMovementService {
                 directions.add(new RobotMovement(directionY, stepsY));
             }
         }
+        writeRequestRow(locations, directions);
         return directions;
+    }
+
+    private void writeRequestRow(Object request, Object output) {
+        var requestRow = new RequestRow();
+        try {
+            requestRow.setRequest(objectMapper.writeValueAsString(request));
+            requestRow.setOutput(objectMapper.writeValueAsString(output));
+            requestRowRepository.save(requestRow);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
